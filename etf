@@ -10,19 +10,25 @@ class ETF(object):
         for etf, stk, qty in etfs:
             self.etfs[etf].append((stk, qty))
 
-    def calc(self, etf):
+    def calc(self, etf, vis):
+        if etf in vis:
+            raise Exception('cycle found %s' % etf)
+
+        vis.add(etf)
         val = 0
+
         for stk, qty in self.etfs[etf]:
             if stk not in self.prices:
                 if stk not in self.etfs:
                     raise Exception('unknown symbol %s' % stk)
-                self.calc(stk)
+                self.calc(stk, vis)
             val += qty * self.prices[stk]
+
         self.prices[etf] = val
         return val
 
     def run(self):
-        return [(etf, self.calc(etf)) for etf in self.etfs]
+        return [(etf, self.calc(etf, set())) for etf in self.etfs]
 
 #--------------------------------------
 
