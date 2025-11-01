@@ -1,0 +1,57 @@
+from collections import defaultdict
+
+#--------------------------------------
+
+class ETF(object):
+    def __init__(self, etfs, prices):
+        self.prices = {stk:price for stk, price in prices}
+        self.etfs   = defaultdict(list)
+
+        for etf, stk, qty in etfs:
+            self.etfs[etf].append((stk, qty))
+
+    def calc(self, etf):
+        val = 0
+        for stk, qty in self.etfs[etf]:
+            if stk not in self.prices:
+                if stk not in self.etfs:
+                    raise Exception('unknown symbol %s' % stk)
+                self.calc(stk)
+            val += qty * self.prices[stk]
+        self.prices[etf] = val
+        return val
+
+    def run(self):
+        return [(etf, self.calc(etf)) for etf in self.etfs]
+
+#--------------------------------------
+
+def test():
+    etfs =   [('ETF1', 'IBM' , 50),
+              ('ETF1', 'APPL', 10),
+              ('ETF1', 'INTL', 30),
+              ('ETF2', 'IBM' , 11),
+              ('ETF2', 'APPL',  1),
+              ('ETF2', 'ETF3',  7),
+              ('ETF3', 'INTL', 10),
+              ('ETF3', 'ETF1',  4),
+              ('ETF3', 'APPL', 13),
+              ('ETF4', 'ETF1',  1),
+              ('ETF4', 'ETF2',  1),
+              ('ETF4', 'ETF3',  1)
+             ]
+
+    prices = [('IBM' , 100),
+              ('APPL', 200),
+              ('INTL',  30)
+             ]
+
+    etf    = ETF(etfs, prices)
+    result = etf.run()
+    print(result)
+
+#--------------------------------------
+
+if __name__ == '__main__':
+    test()
+
